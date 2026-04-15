@@ -1,0 +1,3 @@
+XYZServer = {}
+
+XYZServer.Webhook = ''

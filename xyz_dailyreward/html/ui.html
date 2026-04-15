@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XYZ Daily Reward</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+    --accent:#8a2bff;
+    --accent2:#aa62ff;
+    --bg:#0a0a10;
+    --panel:#111118;
+    --panel2:#151520;
+    --panel3:#1a1a26;
+    --border:rgba(255,255,255,.06);
+    --borderStrong:rgba(138,43,255,.18);
+    --borderHover:rgba(138,43,255,.34);
+    --text:#f4f4fb;
+    --muted:#9c9cb0;
+    --shadow:0 24px 60px rgba(0,0,0,.45);
+    --success1:#8d7dff;
+    --success2:#6d5cff;
+    --danger1:#ff7a7a;
+    --danger2:#ff4a4a;
+}
+*{
+    box-sizing:border-box;
+    user-select:none;
+    -webkit-user-select:none;
+    font-family:'JetBrains Mono', monospace;
+}
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:transparent;
+}
+body{
+    color:var(--text);
+}
+#overlay{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .16s ease;
+}
+#overlay.show{
+    opacity:1;
+    pointer-events:auto;
+}
+#backdrop{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,.38);
+}
+#app{
+    position:relative;
+    width:1120px;
+    max-width:92vw;
+    height:840px;
+    max-height:90vh;
+    display:flex;
+    flex-direction:column;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,.02), transparent),
+        linear-gradient(180deg, rgba(138,43,255,.045), transparent 24%),
+        var(--bg);
+    border:1px solid var(--borderStrong);
+    border-radius:8px;
+    box-shadow:var(--shadow), 0 0 45px rgba(138,43,255,.06);
+    overflow:hidden;
+    transform:translateY(10px) scale(.987);
+    transition:transform .16s ease;
+}
+#overlay.show #app{
+    transform:translateY(0) scale(1);
+}
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:18px;
+    padding:26px 28px 20px 28px;
+    border-bottom:1px solid var(--border);
+    background:
+        linear-gradient(180deg, rgba(255,255,255,.02), transparent),
+        linear-gradient(90deg, rgba(138,43,255,.08), transparent 35%);
+}
+.titleWrap{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    min-width:0;
+}
+.title{
+    color:#9183ff;
+    font-size:36px;
+    font-weight:800;
+    letter-spacing:-.4px;
+}
+.subtitle{
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.55;
+}
+.topActions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+.infoCard{
+    min-width:230px;
+    height:42px;
+    padding:0 14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border-radius:6px;
+    background:#14141d;
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-size:11px;
+    font-weight:800;
+}
+.infoDot{
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:linear-gradient(180deg, var(--accent2), var(--accent));
+    box-shadow:0 0 12px rgba(138,43,255,.35);
+    flex-shrink:0;
+}
+.closeBtn{
+    width:42px;
+    height:42px;
+    border:none;
+    outline:none;
+    border-radius:6px;
+    background:#1a1a22;
+    color:#ff8b8b;
+    border:1px solid rgba(255,74,74,.14);
+    font-size:18px;
+    font-weight:800;
+    cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+.closeBtn:hover{
+    transform:translateY(-1px);
+    border-color:rgba(255,74,74,.28);
+    box-shadow:0 0 14px rgba(255,74,74,.08);
+}
+.content{
+    flex:1;
+    min-height:0;
+    padding:22px 28px 20px 28px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+.headerStats{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto auto;
+    gap:12px;
+    align-items:center;
+}
+.statCard{
+    min-height:58px;
+    padding:0 16px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border-radius:6px;
+    background:linear-gradient(180deg, var(--panel3), var(--panel2));
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-size:12px;
+    font-weight:800;
+}
+.statCard strong{
+    color:var(--text);
+}
+.claimBtn{
+    height:58px;
+    min-width:220px;
+    padding:0 22px;
+    border:none;
+    outline:none;
+    border-radius:6px;
+    background:linear-gradient(180deg, var(--accent2), var(--accent));
+    color:#fff;
+    cursor:pointer;
+    font-size:13px;
+    font-weight:800;
+    box-shadow:0 14px 28px rgba(138,43,255,.16);
+    transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+}
+.claimBtn:hover{
+    transform:translateY(-1px);
+}
+.claimBtn:disabled{
+    opacity:.58;
+    cursor:not-allowed;
+    box-shadow:none;
+    transform:none;
+}
+.gridWrap{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding-right:3px;
+}
+.gridWrap::-webkit-scrollbar{
+    width:7px;
+}
+.gridWrap::-webkit-scrollbar-thumb{
+    background:rgba(255,255,255,.08);
+    border-radius:8px;
+}
+.grid{
+    display:grid;
+    grid-template-columns:repeat(7,minmax(0,1fr));
+    gap:12px;
+}
+.dayCard{
+    min-height:126px;
+    padding:14px;
+    border-radius:7px;
+    border:1px solid var(--border);
+    background:linear-gradient(180deg, #101018, #12121a);
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    gap:10px;
+    cursor:pointer;
+    transition:border-color .12s ease, transform .12s ease, box-shadow .12s ease, background .12s ease, opacity .12s ease;
+    will-change:transform;
+}
+.dayCard:hover{
+    transform:translateY(-1px);
+    border-color:var(--borderHover);
+    box-shadow:0 0 14px rgba(138,43,255,.08);
+}
+.dayCard.claimable{
+    border-color:rgba(138,43,255,.26);
+    background:
+        linear-gradient(180deg, rgba(170,98,255,.10), rgba(138,43,255,.04)),
+        linear-gradient(180deg, #131320, #12121a);
+}
+.dayCard.claimable.selected{
+    border-color:rgba(138,43,255,.66);
+    box-shadow:0 0 20px rgba(138,43,255,.15), inset 0 0 0 1px rgba(170,98,255,.10);
+}
+.dayCard.claimed{
+    border-color:rgba(127,104,255,.24);
+    background:
+        linear-gradient(180deg, rgba(127,104,255,.08), rgba(127,104,255,.03)),
+        linear-gradient(180deg, #131320, #12121a);
+}
+.dayCard.missed{
+    opacity:.68;
+}
+.dayCard.locked{
+    opacity:.54;
+}
+.dayTop{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
+}
+.dayNumber{
+    font-size:28px;
+    font-weight:800;
+    color:var(--text);
+    line-height:1;
+}
+.stateBadge{
+    min-width:28px;
+    height:24px;
+    padding:0 8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:4px;
+    background:#151521;
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-size:10px;
+    font-weight:800;
+    flex-shrink:0;
+}
+.dayCard.claimable .stateBadge{
+    color:#fff;
+    background:linear-gradient(180deg, var(--accent2), var(--accent));
+    border-color:transparent;
+}
+.dayCard.claimed .stateBadge{
+    color:#fff;
+    background:linear-gradient(180deg, var(--success1), var(--success2));
+    border-color:transparent;
+}
+.rewardName{
+    color:var(--text);
+    font-size:12px;
+    font-weight:800;
+    line-height:1.45;
+    word-break:break-word;
+}
+.rewardItems{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+.rewardItem{
+    color:var(--muted);
+    font-size:10px;
+    line-height:1.45;
+    word-break:break-word;
+}
+.footer{
+    border-top:1px solid rgba(138,43,255,.14);
+    padding-top:16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+}
+.footerLeft{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    min-width:0;
+}
+.footerTitle{
+    color:var(--text);
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.2px;
+}
+.footerText{
+    color:var(--muted);
+    font-size:11px;
+    line-height:1.5;
+}
+.legend{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:10px;
+    flex-wrap:wrap;
+}
+.legendTag{
+    height:36px;
+    padding:0 14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    border-radius:6px;
+    background:linear-gradient(180deg, #14141d, #111118);
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-size:10px;
+    font-weight:800;
+}
+.legendTag.claimable{
+    color:#fff;
+    background:linear-gradient(180deg, var(--accent2), var(--accent));
+    border-color:transparent;
+}
+.legendTag.claimed{
+    color:#fff;
+    background:linear-gradient(180deg, var(--success1), var(--success2));
+    border-color:transparent;
+}
+.legendDot{
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:currentColor;
+    opacity:.95;
+}
+#toast{
+    position:fixed;
+    left:50%;
+    top:22px;
+    transform:translateX(-50%);
+    min-width:320px;
+    max-width:90vw;
+    padding:14px 16px;
+    border-radius:6px;
+    background:#0d0d11;
+    border:1px solid var(--border);
+    box-shadow:var(--shadow);
+    display:none;
+    z-index:9999;
+}
+.toastText{
+    color:var(--text);
+    font-size:12px;
+    line-height:1.5;
+}
+.closeBtn,
+.claimBtn,
+.dayCard{
+    backface-visibility:hidden;
+    transform:translateZ(0);
+}
+@media (max-width: 1200px){
+    .grid{
+        grid-template-columns:repeat(6,minmax(0,1fr));
+    }
+}
+@media (max-width: 980px){
+    .headerStats{
+        grid-template-columns:1fr;
+    }
+    .claimBtn{
+        width:100%;
+        min-width:0;
+    }
+    .grid{
+        grid-template-columns:repeat(5,minmax(0,1fr));
+    }
+    .footer{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+    .legend{
+        justify-content:flex-start;
+    }
+}
+@media (max-width: 760px){
+    .grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+    .title{
+        font-size:28px;
+    }
+    .topbar{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+    .topActions{
+        width:100%;
+    }
+    .infoCard{
+        min-width:0;
+        flex:1;
+    }
+}
+</style>
+</head>
+<body>
+<div id="overlay">
+    <div id="backdrop"></div>
+
+    <div id="app">
+        <div class="topbar">
+            <div class="titleWrap">
+                <div class="title" id="title">XYZ DAILY REWARD</div>
+                <div class="subtitle" id="subtitle">Advanced Daily Reward System</div>
+            </div>
+
+            <div class="topActions">
+                <div class="infoCard">
+                    <div class="infoDot"></div>
+                    <span id="topDate">01.01.2026</span>
+                </div>
+                <button class="closeBtn" id="closeBtn">✕</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="headerStats">
+                <div class="statCard">
+                    <span>Today:</span>
+                    <strong id="currentDayText">Day 1</strong>
+                </div>
+
+                <div class="statCard">
+                    <span>Claimed this month:</span>
+                    <strong id="claimedCountText">0 / 30</strong>
+                </div>
+
+                <button class="claimBtn" id="claimBtn" disabled>CLAIM TODAY REWARD</button>
+            </div>
+
+            <div class="gridWrap">
+                <div class="grid" id="daysGrid"></div>
+            </div>
+
+            <div class="footer">
+                <div class="footerLeft">
+                    <div class="footerTitle" id="footerMonthLabel">Monthly Progress</div>
+                    <div class="footerText">
+                        Claim your reward every day to keep your monthly progress active.
+                    </div>
+                </div>
+
+                <div class="legend">
+                    <div class="legendTag claimable">
+                        <span class="legendDot"></span>
+                        CLAIMABLE
+                    </div>
+                    <div class="legendTag claimed">
+                        <span class="legendDot"></span>
+                        CLAIMED
+                    </div>
+                    <div class="legendTag">
+                        <span class="legendDot"></span>
+                        LOCKED
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast">
+    <div class="toastText" id="toastText">Done</div>
+</div>
+
+<script>
+const overlay = document.getElementById('overlay')
+const titleEl = document.getElementById('title')
+const subtitleEl = document.getElementById('subtitle')
+const topDate = document.getElementById('topDate')
+const footerMonthLabel = document.getElementById('footerMonthLabel')
+const currentDayText = document.getElementById('currentDayText')
+const claimedCountText = document.getElementById('claimedCountText')
+const claimBtn = document.getElementById('claimBtn')
+const closeBtn = document.getElementById('closeBtn')
+const daysGrid = document.getElementById('daysGrid')
+const toast = document.getElementById('toast')
+const toastText = document.getElementById('toastText')
+
+let state = {
+    title: 'XYZ DAILY REWARD',
+    subtitle: 'Advanced Daily Reward System',
+    token: null,
+    currentDay: 1,
+    claimCount: 0,
+    month: 0,
+    year: 0,
+    realDate: '',
+    monthLabel: '',
+    days: [],
+    selectedDay: null
+}
+
+let toastTimer = null
+
+function send(action, data = {}) {
+    return fetch(`https://${GetParentResourceName()}/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+        body: JSON.stringify(data)
+    }).then(res => res.json().catch(() => ({}))).catch(() => ({}))
+}
+
+function showToast(text) {
+    toastText.textContent = text
+    toast.style.display = 'block'
+
+    if (toastTimer) clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => {
+        toast.style.display = 'none'
+    }, 2000)
+}
+
+function rewardLine(reward) {
+    if (!reward || typeof reward !== 'object') return 'Unknown reward'
+    if (reward.type === 'item') return `${reward.count}x ${reward.name}`
+    return 'Custom reward'
+}
+
+function getBadgeText(entry) {
+    if (entry.state === 'claimed') return '✓'
+    if (entry.state === 'claimable') return 'NOW'
+    if (entry.state === 'missed') return 'MISS'
+    return 'LOCK'
+}
+
+function canClaimSelected() {
+    if (!state.selectedDay) return false
+
+    const entry = state.days.find(v => Number(v.day) === Number(state.selectedDay))
+    if (!entry) return false
+
+    return entry.state === 'claimable'
+}
+
+function setSelectedDay(day) {
+    state.selectedDay = day
+    renderDays()
+    updateClaimButton()
+}
+
+function updateClaimButton() {
+    if (!canClaimSelected()) {
+        claimBtn.disabled = true
+        claimBtn.textContent = 'CLAIM TODAY REWARD'
+        return
+    }
+
+    claimBtn.disabled = false
+    claimBtn.textContent = `CLAIM DAY ${state.selectedDay} REWARD`
+}
+
+function createRewardItems(entry) {
+    const rewardItems = document.createElement('div')
+    rewardItems.className = 'rewardItems'
+
+    const rewards = Array.isArray(entry.rewards) ? entry.rewards : []
+
+    if (!rewards.length) {
+        const line = document.createElement('div')
+        line.className = 'rewardItem'
+        line.textContent = 'No reward configured'
+        rewardItems.appendChild(line)
+        return rewardItems
+    }
+
+    for (let i = 0; i < rewards.length; i++) {
+        const line = document.createElement('div')
+        line.className = 'rewardItem'
+        line.textContent = rewardLine(rewards[i])
+        rewardItems.appendChild(line)
+    }
+
+    return rewardItems
+}
+
+function createDayCard(entry) {
+    const selected = Number(state.selectedDay) === Number(entry.day)
+    const card = document.createElement('div')
+    card.className = `dayCard ${entry.state}${selected ? ' selected' : ''}`
+
+    const dayTop = document.createElement('div')
+    dayTop.className = 'dayTop'
+
+    const dayNumber = document.createElement('div')
+    dayNumber.className = 'dayNumber'
+    dayNumber.textContent = entry.day
+
+    const stateBadge = document.createElement('div')
+    stateBadge.className = 'stateBadge'
+    stateBadge.textContent = getBadgeText(entry)
+
+    dayTop.appendChild(dayNumber)
+    dayTop.appendChild(stateBadge)
+
+    const rewardName = document.createElement('div')
+    rewardName.className = 'rewardName'
+    rewardName.textContent = entry.label || `Day ${entry.day}`
+
+    card.appendChild(dayTop)
+    card.appendChild(rewardName)
+    card.appendChild(createRewardItems(entry))
+
+    card.addEventListener('click', () => {
+        if (entry.state === 'claimable') {
+            setSelectedDay(entry.day)
+            return
+        }
+
+        if (entry.state === 'claimed') {
+            showToast(`Day ${entry.day} already claimed.`)
+            return
+        }
+
+        if (entry.state === 'missed') {
+            showToast(`Day ${entry.day} is no longer available.`)
+            return
+        }
+
+        showToast(`Day ${entry.day} is locked.`)
+    })
+
+    return card
+}
+
+function renderDays() {
+    const fragment = document.createDocumentFragment()
+    daysGrid.innerHTML = ''
+
+    for (let i = 0; i < state.days.length; i++) {
+        fragment.appendChild(createDayCard(state.days[i]))
+    }
+
+    daysGrid.appendChild(fragment)
+}
+
+function renderAll() {
+    titleEl.textContent = state.title || 'XYZ DAILY REWARD'
+    subtitleEl.textContent = state.subtitle || 'Advanced Daily Reward System'
+    topDate.textContent = state.realDate || `${state.month}.${state.year}`
+    footerMonthLabel.textContent = state.monthLabel || 'Monthly Progress'
+    currentDayText.textContent = `Day ${state.currentDay}`
+    claimedCountText.textContent = `${state.claimCount} / 30`
+
+    const claimableEntry = state.days.find(v => v.state === 'claimable')
+    state.selectedDay = claimableEntry ? claimableEntry.day : null
+
+    renderDays()
+    updateClaimButton()
+}
+
+closeBtn.addEventListener('click', async () => {
+    await send('close')
+})
+
+claimBtn.addEventListener('click', async () => {
+    if (!canClaimSelected()) {
+        showToast('This reward cannot be claimed right now.')
+        return
+    }
+
+    claimBtn.disabled = true
+
+    await send('claim', {
+        day: state.selectedDay
+    })
+})
+
+document.addEventListener('keydown', async e => {
+    if (e.key === 'Escape' && overlay.classList.contains('show')) {
+        await send('close')
+    }
+})
+
+window.addEventListener('message', event => {
+    const data = event.data
+    if (!data || !data.action) return
+
+    if (data.action === 'open') {
+        document.documentElement.style.setProperty('--accent', data.accent || '#8a2bff')
+        document.documentElement.style.setProperty('--accent2', data.accent2 || '#aa62ff')
+
+        state = {
+            ...state,
+            title: data.title || 'XYZ DAILY REWARD',
+            subtitle: data.subtitle || 'Advanced Daily Reward System',
+            token: data.token || null,
+            currentDay: Number(data.currentDay || 1),
+            claimCount: Number(data.claimCount || 0),
+            month: Number(data.month || 0),
+            year: Number(data.year || 0),
+            realDate: data.realDate || '',
+            monthLabel: data.monthLabel || '',
+            days: Array.isArray(data.days) ? data.days : []
+        }
+
+        renderAll()
+        overlay.classList.add('show')
+    }
+
+    if (data.action === 'update') {
+        state = {
+            ...state,
+            token: data.token || state.token,
+            currentDay: Number(data.currentDay || state.currentDay),
+            claimCount: Number(data.claimCount || state.claimCount),
+            month: Number(data.month || state.month),
+            year: Number(data.year || state.year),
+            realDate: data.realDate || state.realDate,
+            monthLabel: data.monthLabel || state.monthLabel,
+            days: Array.isArray(data.days) ? data.days : state.days
+        }
+
+        renderAll()
+    }
+
+    if (data.action === 'close') {
+        overlay.classList.remove('show')
+    }
+})
+</script>
+</body>
+</html>

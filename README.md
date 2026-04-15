@@ -1,3 +1,4 @@
+# DISCORD: https://discord.gg/AevgUUYugm
 # XYZ Daily Reward
 
 A free FiveM daily reward script with a modern UI, SQL saving, and improved server-side protection.
